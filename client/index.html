@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="icon.svg">
+    <title>Document</title>
+    <style>
+        #container{
+            margin: 5vw 10vw;
+        }
+
+        #msg {
+            border: 1px solid black;
+            border-radius: 5px;
+            height: 80vh;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label{
+            font-size: 1.3vw;
+            line-height: 15px;
+            width: 11%;
+            text-align: center;
+            line-height: 4vh;
+        }
+        input{
+            width: 76%;
+        }
+        button{
+            width: 11%;
+            background-color: transparent;
+            border-style: none;
+            cursor: pointer;
+        }
+
+        #filebtn, #sendbtn{
+            width: 5.2%;
+        }
+
+        button:hover{
+            transform: scale(1.1);
+        }
+        
+        button:active{
+            transform: scale(1);
+        }
+
+        #inp {
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            height: 4vh;
+        }
+
+        #message, #sndimg{
+            background-color: rgb(218, 218, 218);
+            padding: 2.2vh;
+            border-bottom: 1px solid black;
+            border-radius: 5px;
+            max-width: 50%;
+            text-align: left;
+            margin: 8px;
+            word-wrap: break-word;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            align-self: flex-start;
+        }
+
+        #sndimg{
+            background-color: white;
+        }
+
+        span{
+            font-size: 50%;
+            color: rgb(65, 65, 65);
+        }
+    </style>
+    <script src=".\node_modules\socket.io-client\dist\socket.io.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="msg">
+
+        </div>
+        <form id="form">
+            <div id="inp">
+                <label for="send">Message</label>
+                <input type="text" id="send">
+                <input type="file" name="" id="fileInput" style="display: none;">
+                <button id="filebtn"><img src="file.svg" alt="" style="width: 70%; height: 70%;"></button>
+                <button id="sendbtn"><img src="msgsend.svg" alt="" style="width: 70%; height: 70%;"></button>
+            </div>
+            <div id="inp">
+                <label for="join">Message</label>
+                <input type="text" id="join">
+                <button id="joinbtn"><img src="room.svg" alt="" style="width: 70%; height: 70%;"></button>
+            </div>
+        </form>
+    </div>
+    <script type="module" src="script1.js"></script>
+</body>
+
+</html>
