@@ -9,19 +9,50 @@ const form = document.getElementById('form')
 const messagecont = document.getElementById('msg')
 const fileInput = document.getElementById('fileInput');
 const fileBtn = document.getElementById('filebtn');
+const options = document.getElementById('options');
+const image = document.getElementById('image')
+const docmnt = document.getElementById('document')
+const dwnld = document.getElementById('documentdownload');
 
 fileBtn.addEventListener('click', function(e) {
     if (e.detail === 1) {
-        fileInput.click(); // Trigger click on the file input
+        // fileInput.click(); // Trigger click on the file input
+        // options.style.visibility = 'visible';
+        // options.style.display = 'block';
+        if(options.style.width == '10%'){
+            options.style.width = '0%';
+            options.style.height = '0%';
+            setTimeout(() => {
+                options.style.visibility = 'hidden'
+            }, 200);
+        } else{
+            options.style.visibility = 'visible'
+            options.style.width = '10%';
+            options.style.height = '8%';
+        }
     }
 });
+
+image.addEventListener('click', ()=>{
+    fileInput.accept = ".jpg, .jpeg, .png, .svg"
+    fileInput.click();
+})
+
+docmnt.addEventListener('click', ()=>{
+    fileInput.accept = ""
+    fileInput.click();
+})
 
 socket.on('rcv-msg', msg=>{
     displayMsg(msg, 'other');
 })
 
 socket.on('filercv', msg=>{
+    console.log(msg);
     displayMsg(msg, 'other');
+    if (msg.file) {
+        createDownloadLink(msg.file);
+    }
 })
 
 form.addEventListener('submit', e=>{
@@ -34,9 +65,9 @@ form.addEventListener('submit', e=>{
     if(file){
         reader.readAsDataURL(file);
         reader.onload = ()=>{
-            const imageobj = {img: reader.result};
-            displayMsg(imageobj, 'me');
-            socket.emit("filesnd", imageobj);
+            const obj = (fileInput.accept=="") ? { file: { data: reader.result, name: file.name, type: file.type } } : {img: reader.result};
+            displayMsg(obj, 'me');
+            socket.emit("filesnd", obj);
         }
         fileInput.value = "";
     }
@@ -75,6 +106,38 @@ function displayMsg(msg, str){
         messagecont.scrollTop = messagecont.scrollHeight;
         return;
     }
+    if (msg.file) {
+        const fileContainer = document.createElement('div');
+        const img = document.createElement('img');
+        const fileName = document.createElement('p');
+        const fileLink = document.createElement('a');
+
+        fileContainer.id = 'message';
+        fileName.textContent = msg.file.name;
+        fileLink.textContent = msg.file.name;
+        fileLink.href = msg.file.data;
+        fileLink.setAttribute('download', '');
+        fileLink.id = "documentdownload";
+        fileLink.style.display = 'none';
+        img.src = 'download.svg';
+
+
+        if (str === 'me') {
+            fileContainer.style.cssText = "text-align: right; background-color: white; float: right; align-self: flex-end;";
+            time.style.cssText = "float: right; margin-top: 3px";
+        }
+        fileName.append(img);
+        fileContainer.appendChild(fileName);
+        // fileContainer.appendChild(br.cloneNode());
+        fileContainer.appendChild(fileLink);
+        fileContainer.appendChild(br);
+        fileContainer.appendChild(time);
+
+        document.getElementById('msg').appendChild(fileContainer);
+        messagecont.scrollTop = messagecont.scrollHeight;
+
+        return;
+    }
     const message = document.createElement('p');
     message.id = "message";
     message.textContent = msg;
@@ -86,4 +149,16 @@ function displayMsg(msg, str){
     message.append(time);
     document.getElementById('msg').append(message);
     messagecont.scrollTop = messagecont.scrollHeight;
+}
+
+function createDownloadLink(file) {
+    const downloadLink = document.createElement('a');
+    downloadLink.href = file.data;
+    downloadLink.download = file.name;
+
+    document.getElementById('msg').appendChild(downloadLink);
+
+    downloadLink.click();
+
+    document.getElementById('msg').removeChild(downloadLink);
 }
