@@ -10,20 +10,22 @@
         #container {
             margin: 5vw 10vw;
         }
-
+        
         #msg {
             background-color: rgb(229, 229, 229);
-            border: 1px solid black;
+            /* border: 1px solid black; */
             border-radius: 5px;
             height: 80vh;
             max-height: 80vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            margin-bottom: 2%;
         }
 
         label {
-            font-size: 1.3vw;
+            font-size: 100%;
             line-height: 15px;
             width: 11%;
             text-align: center;
@@ -110,7 +112,7 @@
             transform: translate(-90%, -120%);
             border-radius: 20px;
             transition: width 0.5s, height 0.5s;
-            padding: 1.1rem;
+            padding: 1.1rem 0;
             display: flex;
             justify-content: space-around;
         }
@@ -150,7 +152,7 @@
                 <button id="sendbtn"><img src="msgsend.svg" alt="" style="width: 70%; height: 70%;"></button>
             </div>
             <div id="inp">
-                <label for="join">Message</label>
+                <label for="join">Room</label>
                 <input type="text" id="join">
                 <button id="joinbtn"><img src="room.svg" alt="" style="width: 70%; height: 70%;"></button>
             </div>

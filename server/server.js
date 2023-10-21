@@ -1,7 +1,8 @@
 const io = require('socket.io')(5000, {
     cors: {
         origin: ["http://192.168.29.39:3000", "http://localhost:3000"]
-    }
+    },
+    maxHttpBufferSize: 5e7
 })
 
 io.on('connection', socket=>{

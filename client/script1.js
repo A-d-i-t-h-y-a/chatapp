@@ -28,7 +28,7 @@ fileBtn.addEventListener('click', function(e) {
         } else{
             options.style.visibility = 'visible'
             options.style.width = '10%';
-            options.style.height = '8%';
+            options.style.height = '5%';
         }
     }
 });
@@ -118,7 +118,7 @@ function displayMsg(msg, str){
         fileLink.href = msg.file.data;
         fileLink.setAttribute('download', '');
         fileLink.id = "documentdownload";
-        fileLink.style.display = 'none';
+        // fileLink.style.display = 'none';
         img.src = 'download.svg';
 
 
