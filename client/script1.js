@@ -14,33 +14,43 @@ const image = document.getElementById('image')
 const docmnt = document.getElementById('document')
 const dwnld = document.getElementById('documentdownload');
 
+function toggleoptions(){
+    if(options.style.width == '10%'){
+        options.style.padding = '0 0'
+        options.style.height = '0%';
+        setTimeout(() => {
+            options.style.width = '0%';
+            options.style.visibility = 'hidden'
+        },175);
+    } else{
+        options.style.visibility = 'visible'
+        setTimeout(() => {
+            options.style.padding = '1.1rem 0'
+        },50);
+        options.style.width = '10%';
+        options.style.height = '5%';
+    }
+}
+
 fileBtn.addEventListener('click', function(e) {
     if (e.detail === 1) {
         // fileInput.click(); // Trigger click on the file input
         // options.style.visibility = 'visible';
         // options.style.display = 'block';
-        if(options.style.width == '10%'){
-            options.style.width = '0%';
-            options.style.height = '0%';
-            setTimeout(() => {
-                options.style.visibility = 'hidden'
-            }, 200);
-        } else{
-            options.style.visibility = 'visible'
-            options.style.width = '10%';
-            options.style.height = '5%';
-        }
+        toggleoptions();
     }
 });
 
 image.addEventListener('click', ()=>{
     fileInput.accept = ".jpg, .jpeg, .png, .svg"
     fileInput.click();
+    toggleoptions();
 })
 
 docmnt.addEventListener('click', ()=>{
     fileInput.accept = ""
     fileInput.click();
+    toggleoptions();
 })
 
 socket.on('rcv-msg', msg=>{
@@ -50,9 +60,6 @@ socket.on('rcv-msg', msg=>{
 socket.on('filercv', msg=>{
     console.log(msg);
     displayMsg(msg, 'other');
-    if (msg.file) {
-        createDownloadLink(msg.file);
-    }
 })
 
 form.addEventListener('submit', e=>{
