@@ -12,7 +12,61 @@ const fileBtn = document.getElementById('filebtn');
 const options = document.getElementById('options');
 const image = document.getElementById('image')
 const docmnt = document.getElementById('document')
-const dwnld = document.getElementById('documentdownload');
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    sessionStorage.setItem('name', 'guest');
+    const a = prompt("Enter your Name");
+    if(a!= null)
+    sessionStorage.setItem('name', a);
+    let name = sessionStorage.getItem('name');
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+    document.getElementsByTagName('h2')[0].innerHTML = name;
+    socket.emit('newuser', name);
+})
+
+let flag = true;
+
+msginp.addEventListener('input', ()=>{
+    const name = sessionStorage.getItem('name');
+    if(!flag && msginp.value === ''){
+        socket.emit('notype', name);
+        flag = true;
+    }
+    else if(flag){
+        socket.emit('typing', name);
+        flag = false;
+    }
+})
+
+socket.on('notyping', name=>{
+    document.getElementsByClassName('typingmsg')[0].remove();
+})
+
+socket.on('typeanim', (name)=>{
+    const message = document.createElement('div');
+    const div = document.createElement('div');
+    const username = document.createElement('p');
+    username.textContent = name;
+    username.id = 'uname'
+    message.id = 'message';
+    div.classList.add('bouncing-loader');
+    div.innerHTML = `<div></div>
+    <div></div>
+    <div></div>`;
+    message.classList.add('typingmsg');
+    message.append(username);
+    message.append(div);
+    document.getElementById('msg').append(message);
+    messagecont.scrollTop = messagecont.scrollHeight
+})
+
+
+socket.on('joined', name=>{
+    const user = document.createElement('p');
+    user.textContent = name+' joined chat';
+    user.style.cssText = 'border-radius: 10px;padding: 0.8% 0;margin-bottom:0.4% ;background-color: yellow;text-align: center;'
+    document.getElementById('msg').append(user);
+});
 
 function toggleoptions(){
     if(options.style.width == '10%'){
@@ -34,9 +88,6 @@ function toggleoptions(){
 
 fileBtn.addEventListener('click', function(e) {
     if (e.detail === 1) {
-        // fileInput.click(); // Trigger click on the file input
-        // options.style.visibility = 'visible';
-        // options.style.display = 'block';
         toggleoptions();
     }
 });
@@ -53,13 +104,13 @@ docmnt.addEventListener('click', ()=>{
     toggleoptions();
 })
 
-socket.on('rcv-msg', msg=>{
-    displayMsg(msg, 'other');
+
+socket.on('rcv-msg', (msg, uname)=>{
+    displayMsg(msg, 'other', uname);
 })
 
-socket.on('filercv', msg=>{
-    console.log(msg);
-    displayMsg(msg, 'other');
+socket.on('filercv', (msg, uname)=>{
+    displayMsg(msg, 'other', uname);
 })
 
 form.addEventListener('submit', e=>{
@@ -68,19 +119,21 @@ form.addEventListener('submit', e=>{
     const room = roomname.value;
     const reader = new FileReader();
     const file = fileInput.files[0];
+    const uname = sessionStorage.getItem('name');
     if(!file && msg==="") return;
     if(file){
         reader.readAsDataURL(file);
         reader.onload = ()=>{
             const obj = (fileInput.accept=="") ? { file: { data: reader.result, name: file.name, type: file.type } } : {img: reader.result};
-            displayMsg(obj, 'me');
-            socket.emit("filesnd", obj);
+            displayMsg(obj, 'me', uname);
+            socket.emit("filesnd", obj, uname);
         }
         fileInput.value = "";
     }
     if(msg === "") return;
-    displayMsg(msg, 'me');
-    socket.emit('snd-message', msg, room);
+    if(!flag) flag = true;
+    displayMsg(msg, 'me', uname);
+    socket.emit('snd-message', msg, room, uname);
     msginp.value = "";
 })
 
@@ -90,7 +143,14 @@ roomjoin.addEventListener('click', ()=>{
 })
 
 
-function displayMsg(msg, str){
+function displayMsg(msg, str, uname){
+    if(document.getElementsByClassName('typingmsg')[0]!=undefined){
+        document.getElementsByClassName('typingmsg')[0].remove();
+        flag = true;
+    }
+    const username = document.createElement('p');
+    username.textContent = uname;
+    username.id = 'uname'
     const time = document.createElement('span');
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');
@@ -100,16 +160,20 @@ function displayMsg(msg, str){
     time.textContent = `${formattedHours}:${minutes} ${meridian}`;
     const br = document.createElement('br');
     if(msg.img){
+        const div = document.createElement('div');
         const img = document.createElement('img');
+        div.id = 'message';
         img.src = msg.img;
         img.id = "sndimg";
         if(str == 'me'){
-            img.style.cssText = "text-align: right; background-color: white; float: right; align-self: flex-end;";
+            div.style.cssText = "text-align: right; background-color: white; float: right; align-self: flex-end;";
             time.style.cssText = "float: right; margin-top: 3px"
         }
-        img.append(br);
-        img.append(time);
-        document.getElementById('msg').append(img);
+        div.append(username);
+        div.append(img);
+        div.append(br);
+        div.append(time);
+        document.getElementById('msg').append(div);
         messagecont.scrollTop = messagecont.scrollHeight;
         return;
     }
@@ -123,35 +187,42 @@ function displayMsg(msg, str){
         fileName.textContent = msg.file.name;
         fileLink.textContent = msg.file.name;
         fileLink.href = msg.file.data;
-        fileLink.setAttribute('download', '');
-        fileLink.id = "documentdownload";
+        // fileLink.setAttribute('download', '');
+        fileLink.download = msg.file.name;
+        fileLink.id = "docdwnld"+msg.file.name;
+        fileLink.style.display = 'none';
         // fileLink.style.display = 'none';
         img.src = 'download.svg';
-
+        img.id = msg.file.name;
+        img.classList.add('downloadbtn')
 
         if (str === 'me') {
             fileContainer.style.cssText = "text-align: right; background-color: white; float: right; align-self: flex-end;";
             time.style.cssText = "float: right; margin-top: 3px";
         }
+        
         fileName.append(img);
+        fileContainer.append(username)
         fileContainer.appendChild(fileName);
         // fileContainer.appendChild(br.cloneNode());
         fileContainer.appendChild(fileLink);
         fileContainer.appendChild(br);
         fileContainer.appendChild(time);
-
         document.getElementById('msg').appendChild(fileContainer);
         messagecont.scrollTop = messagecont.scrollHeight;
-
+        img.addEventListener('click', ()=>{
+            fileLink.click();
+        })
         return;
     }
     const message = document.createElement('p');
     message.id = "message";
-    message.textContent = msg;
     if(str == 'me'){
         message.style.cssText = "text-align: right; background-color: white; float: right; align-self: flex-end;";
         time.style.cssText = "float: right; margin-top: 3px"
+        username.style.color = 'red';
     }
+    message.innerHTML = `${username.outerHTML} ${msg}`;
     message.append(br);
     message.append(time);
     document.getElementById('msg').append(message);
