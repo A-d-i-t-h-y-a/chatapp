@@ -38,6 +38,14 @@ msginp.addEventListener('input', ()=>{
     }
 })
 
+socket.on('count', count=>{
+    document.getElementById('count').innerHTML = count;
+})
+
+socket.on('userdisconnect', count=>{
+    document.getElementById('count').innerHTML = count;
+})
+
 socket.on('notyping', name=>{
     document.getElementsByClassName('typingmsg')[0].remove();
 })
@@ -117,17 +125,19 @@ form.addEventListener('submit', e=>{
     e.preventDefault();
     const msg = msginp.value;
     const room = roomname.value;
-    const reader = new FileReader();
-    const file = fileInput.files[0];
+    const file1 = fileInput.files[0];
     const uname = sessionStorage.getItem('name');
-    if(!file && msg==="") return;
-    if(file){
+    if(!file1 && msg==="") return;
+    for (const file of fileInput.files) {
+        const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = ()=>{
             const obj = (fileInput.accept=="") ? { file: { data: reader.result, name: file.name, type: file.type } } : {img: reader.result};
             displayMsg(obj, 'me', uname);
             socket.emit("filesnd", obj, uname);
         }
+    }
+    if(file1){
         fileInput.value = "";
     }
     if(msg === "") return;
@@ -198,15 +208,15 @@ function displayMsg(msg, str, uname){
 
         if (str === 'me') {
             fileContainer.style.cssText = "text-align: right; background-color: white; float: right; align-self: flex-end;";
-            time.style.cssText = "float: right; margin-top: 3px";
+            time.style.cssText = "float: right; margin-top: 3%";
         }
-        
+        fileName.style.cssText = 'display: flex; align-items: center; word-break: bread-word;'
+        img.style.cssText = 'width: 3rem; margin-left: 3%; cursor: pointer;';
         fileName.append(img);
         fileContainer.append(username)
         fileContainer.appendChild(fileName);
         // fileContainer.appendChild(br.cloneNode());
         fileContainer.appendChild(fileLink);
-        fileContainer.appendChild(br);
         fileContainer.appendChild(time);
         document.getElementById('msg').appendChild(fileContainer);
         messagecont.scrollTop = messagecont.scrollHeight;

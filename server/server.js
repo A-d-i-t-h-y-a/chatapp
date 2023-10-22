@@ -1,5 +1,3 @@
-const { LogError } = require('concurrently')
-
 const io = require('socket.io')(5000, {
     cors: {
         origin: ["http://192.168.29.39:3000", "http://localhost:3000"]
@@ -9,6 +7,8 @@ const io = require('socket.io')(5000, {
 
 io.on('connection', socket=>{
     console.log(socket.id);
+    io.emit('count', io.engine.clientsCount);
+
     socket.on('newuser', name=>{
         socket.broadcast.emit('joined', name);
     })
@@ -36,5 +36,9 @@ io.on('connection', socket=>{
 
     socket.on('join-room', room=>{
         socket.join(room)
+    })
+
+    socket.on('disconnect', ()=>{
+        io.emit('userdisconnect', io.engine.clientsCount);
     })
 })
